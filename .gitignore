@@ -1,0 +1,14 @@
+# .gitignore
+
+.gradle/
+.idea/
+.local.properties
+*.iml
+*.apk
+*.ap_
+*.dex
+*.class
+*.log
+build/
+**/build/
+androidTest/

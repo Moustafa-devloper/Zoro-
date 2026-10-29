@@ -1,24 +1,17 @@
 package com.nexus.ffpanel;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
     private static final String PREFS = "nexus_prefs";
@@ -132,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                 .setItems(labels, (dialog, which) -> {
                     GameSelectionManager.GameApp selected = games.get(which);
                     prefs.edit().putString(KEY_SELECTED_GAME, selected.packageName).apply();
-                    tvSelectedGame.setText(selected.appName);
+                    tvSelectedGame.setText("Selected game: " + selected.appName);
                     GameSelectionManager.launchGame(this, selected.packageName);
                 })
                 .show();

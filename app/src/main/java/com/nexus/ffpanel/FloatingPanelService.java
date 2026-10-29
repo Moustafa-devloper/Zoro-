@@ -3,13 +3,13 @@ package com.nexus.ffpanel;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -23,8 +23,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 public class FloatingPanelService extends Service {
-    private static final String TAG = "FloatingPanelService";
     private static final String CHANNEL_ID = "nexus_ff_panel_overlay";
+    private static final String ACTION_STOP_PANEL = "com.nexus.ffpanel.STOP_PANEL";
 
     private WindowManager windowManager;
     private WindowManager.LayoutParams layoutParams;
@@ -40,6 +40,11 @@ public class FloatingPanelService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && ACTION_STOP_PANEL.equals(intent.getAction())) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
         if (!OverlayPermissionHelper.canDrawOverlays(this)) {
             stopSelf();
             return START_NOT_STICKY;
@@ -72,7 +77,7 @@ public class FloatingPanelService extends Service {
             try {
                 windowManager.removeView(overlayView);
             } catch (IllegalArgumentException ignored) {
-                // Could already be detached.
+                // The view may already have been detached by the system.
             }
         }
         overlayView = null;
@@ -116,17 +121,23 @@ public class FloatingPanelService extends Service {
 
     private Notification buildNotification() {
         Intent stopIntent = new Intent(this, FloatingPanelService.class);
-        stopIntent.setAction("STOP_PANEL");
+        stopIntent.setAction(ACTION_STOP_PANEL);
+        PendingIntent stopPendingIntent = PendingIntent.getService(
+                this,
+                0,
+                stopIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_nexus)
-                .setContentTitle("NEXUS FF PANEL ULTRA")
-                .setContentText("Floating panel active")
+                .setContentTitle("NEXUS FF PANEL")
+                .setContentText("Floating panel is active")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
-                .setOnlyAlertOnce(true);
+                .setOnlyAlertOnce(true)
+                .addAction(R.drawable.ic_stop, "Stop Panel", stopPendingIntent);
 
-        builder.addAction(R.drawable.ic_stop, "Stop", null);
         return builder.build();
     }
 
@@ -134,7 +145,7 @@ public class FloatingPanelService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "NEXUS Floating Panel",
+                    "NEXUS FF PANEL",
                     NotificationManager.IMPORTANCE_LOW
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
@@ -147,8 +158,6 @@ public class FloatingPanelService extends Service {
     private final class DragTouchListener implements View.OnTouchListener {
         private int lastX;
         private int lastY;
-        private float initialTouchX;
-        private float initialTouchY;
         private float initialViewX;
         private float initialViewY;
 
@@ -158,8 +167,6 @@ public class FloatingPanelService extends Service {
                 case MotionEvent.ACTION_DOWN:
                     lastX = (int) event.getRawX();
                     lastY = (int) event.getRawY();
-                    initialTouchX = event.getRawX();
-                    initialTouchY = event.getRawY();
                     initialViewX = layoutParams.x;
                     initialViewY = layoutParams.y;
                     return true;
@@ -180,3 +187,4 @@ public class FloatingPanelService extends Service {
         }
     }
 }
+
