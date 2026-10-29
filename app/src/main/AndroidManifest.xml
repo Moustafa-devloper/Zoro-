@@ -23,7 +23,7 @@
         android:theme="@style/Theme.NexusFFPanel">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashActivity"
             android:exported="true"
             android:launchMode="singleTask">
             <intent-filter>
@@ -31,6 +31,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
 
         <activity
             android:name=".SettingsActivity"
