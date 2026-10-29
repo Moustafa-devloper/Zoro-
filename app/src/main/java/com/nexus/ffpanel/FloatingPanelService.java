@@ -41,7 +41,7 @@ public class FloatingPanelService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && ACTION_STOP_PANEL.equals(intent.getAction())) {
-            stopSelf();
+            stopPanel();
             return START_NOT_STICKY;
         }
 
@@ -72,12 +72,16 @@ public class FloatingPanelService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stopPanel();
+    }
+
+    private void stopPanel() {
         stopForeground(true);
         if (windowManager != null && overlayView != null && isAttached) {
             try {
-                windowManager.removeView(overlayView);
+                windowManager.removeViewImmediate(overlayView);
             } catch (IllegalArgumentException ignored) {
-                // The view may already have been detached by the system.
+                // View may already be detached by the system.
             }
         }
         overlayView = null;
@@ -85,6 +89,10 @@ public class FloatingPanelService extends Service {
     }
 
     private void createOverlay() {
+        if (isAttached || overlayView != null) {
+            return;
+        }
+
         overlayView = (FrameLayout) LayoutInflater.from(this).inflate(R.layout.floating_panel, null, false);
         Button minimizeButton = overlayView.findViewById(R.id.btnMinimize);
         Button stopButton = overlayView.findViewById(R.id.btnStop);
@@ -93,7 +101,6 @@ public class FloatingPanelService extends Service {
 
         minimizeButton.setOnClickListener(v -> collapsePanel());
         stopButton.setOnClickListener(v -> stopSelf());
-
         overlayView.setOnTouchListener(new DragTouchListener());
 
         layoutParams = new WindowManager.LayoutParams(
@@ -109,8 +116,14 @@ public class FloatingPanelService extends Service {
         layoutParams.x = 36;
         layoutParams.y = 200;
 
-        windowManager.addView(overlayView, layoutParams);
-        isAttached = true;
+        try {
+            windowManager.addView(overlayView, layoutParams);
+            isAttached = true;
+        } catch (IllegalStateException e) {
+            overlayView = null;
+            isAttached = false;
+            stopSelf();
+        }
     }
 
     private void collapsePanel() {
@@ -173,9 +186,9 @@ public class FloatingPanelService extends Service {
                 case MotionEvent.ACTION_MOVE:
                     int deltaX = (int) (event.getRawX() - lastX);
                     int deltaY = (int) (event.getRawY() - lastY);
-                    layoutParams.x = initialViewX + deltaX;
-                    layoutParams.y = initialViewY + deltaY;
-                    if (windowManager != null) {
+                    layoutParams.x = (int) (initialViewX + deltaX);
+                    layoutParams.y = (int) (initialViewY + deltaY);
+                    if (windowManager != null && overlayView != null) {
                         windowManager.updateViewLayout(overlayView, layoutParams);
                     }
                     lastX = (int) event.getRawX();
@@ -187,4 +200,3 @@ public class FloatingPanelService extends Service {
         }
     }
 }
-
