@@ -1,12 +1,7 @@
 package com.nexus.ffpanel;
 
-import android.app.AlertDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -56,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
         btnToggleGamingMode.setOnClickListener(v -> toggleGamingMode());
         btnFloatingPanel.setOnClickListener(v -> toggleFloatingPanel());
-        btnOpenSettings.setOnClickListener(v -> openSettings());
-        btnSettings.setOnClickListener(v -> openSettings());
+        btnOpenSettings.setOnClickListener(v -> openSettingsActivity());
+        btnSettings.setOnClickListener(v -> openSettingsActivity());
         btnSelectGame.setOnClickListener(v -> openGameSelection());
         btnScreenShift.setOnClickListener(v -> showScreenShiftInfo());
 
@@ -86,28 +81,27 @@ public class MainActivity extends AppCompatActivity {
         prefs.edit().putBoolean(KEY_PANEL_ACTIVE, !active).apply();
 
         if (!active) {
-            Intent service = new Intent(this, FloatingPanelService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            android.content.Intent service = new android.content.Intent(this, FloatingPanelService.class);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 startForegroundService(service);
             } else {
                 startService(service);
             }
         } else {
-            stopService(new Intent(this, FloatingPanelService.class));
+            stopService(new android.content.Intent(this, FloatingPanelService.class));
         }
 
         updateDashboard();
     }
 
-    private void openSettings() {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
+    private void openSettingsActivity() {
+        startActivity(new android.content.Intent(this, SettingsActivity.class));
     }
 
     private void openGameSelection() {
         java.util.List<GameSelectionManager.GameApp> games = GameSelectionManager.getInstalledGames(this);
         if (games.isEmpty()) {
-            new AlertDialog.Builder(this)
+            new android.app.AlertDialog.Builder(this)
                     .setTitle("Game library")
                     .setMessage("No launchable games were detected on this device.")
                     .setPositiveButton("OK", null)
@@ -120,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
             labels[i] = games.get(i).appName;
         }
 
-        new AlertDialog.Builder(this)
+        new android.app.AlertDialog.Builder(this)
                 .setTitle("Select a game")
                 .setItems(labels, (dialog, which) -> {
                     GameSelectionManager.GameApp selected = games.get(which);
@@ -132,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showScreenShiftInfo() {
-        new AlertDialog.Builder(this)
+        new android.app.AlertDialog.Builder(this)
                 .setTitle("Screen Shift")
                 .setMessage(ScreenShiftManager.getCapabilityStatus())
                 .setPositiveButton("OK", null)
