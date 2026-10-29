@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -30,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnToggleGamingMode;
     private Button btnFloatingPanel;
     private Button btnOpenSettings;
+    private Button btnSettings;
     private Button btnSelectGame;
     private Button btnScreenShift;
 
@@ -50,12 +50,14 @@ public class MainActivity extends AppCompatActivity {
         btnToggleGamingMode = findViewById(R.id.btnToggleGamingMode);
         btnFloatingPanel = findViewById(R.id.btnFloatingPanel);
         btnOpenSettings = findViewById(R.id.btnOpenSettings);
+        btnSettings = findViewById(R.id.btnSettings);
         btnSelectGame = findViewById(R.id.btnSelectGame);
         btnScreenShift = findViewById(R.id.btnScreenShift);
 
         btnToggleGamingMode.setOnClickListener(v -> toggleGamingMode());
         btnFloatingPanel.setOnClickListener(v -> toggleFloatingPanel());
         btnOpenSettings.setOnClickListener(v -> openSettings());
+        btnSettings.setOnClickListener(v -> openSettings());
         btnSelectGame.setOnClickListener(v -> openGameSelection());
         btnScreenShift.setOnClickListener(v -> showScreenShiftInfo());
 
@@ -98,9 +100,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openSettings() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", getPackageName(), null);
-        intent.setData(uri);
+        Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
 
